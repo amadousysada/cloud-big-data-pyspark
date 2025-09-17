@@ -1,0 +1,34 @@
+name: publish-notebook-to-s3
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - notebook.ipynb
+  workflow_dispatch:
+
+env:
+  ACCOUNT_ID: ${{ secrets.ACCOUNT_ID }}
+  WORKSPACE_STORAGE_LOCATION: ${{ secrets.WORKSPACE_STORAGE_LOCATION }}
+  WORKSPACE_ID: ${{ secrets.WORKSPACE_ID }}
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure AWS creds (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: "arn:aws:iam::${{ env.ACCOUNT_ID }}:role/github-actions-s3-writer"
+          aws-region: eu-west-1
+
+      - name: Sync notebooks to S3 (versioned by commit)
+        run: |
+          set -euo pipefail
+          test -f notebook.ipynb
+          aws s3 cp notebook.ipynb "s3://aws-emr-studio-${{ env.ACCOUNT_ID }}-eu-west-1/${{ env.WORKSPACE_STORAGE_LOCATION }}/${{ env.WORKSPACE_ID }}/notebook.ipynb"

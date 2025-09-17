@@ -1,0 +1,67 @@
+{
+  "cluster_name": "p11-fruits-pipeline",
+  "account_id": "A DEFINIR",
+  "region": "A DEFINIR",
+  "release_label": "emr-7.10.0",
+  "logging": {
+    "log_bucket": "A DEFINIR",
+    "log_prefix": "elasticmapreduce/"
+  },
+  "iam": {
+    "service_role": "EMR_DefaultRole",
+    "instance_profile": "EMR_EC2_DefaultRole"
+  },
+  "network": {
+    "subnet_ids": ["A DEFINIR"],
+    "key_name": "A DEFINIR",
+    "master_sg": "A DEFINIR",
+    "core_sg": "A DEFINIR",
+    "additional_master_sg": [],
+    "additional_core_sg": []
+  },
+  "applications": [
+    "Hadoop",
+    "JupyterEnterpriseGateway",
+    "Livy",
+    "Spark",
+    "TensorFlow"
+  ],
+  "tags": {
+    "project": "p11",
+    "for-use-with-amazon-emr-managed-policies": "true"
+  },
+  "bootstrap_actions": [
+    {
+      "name": "Install Python libs",
+      "path": "s3://bootstrap-deps/install_pydeps.sh",
+      "args": ["pandas==2.2.2", "pyarrow==16.1.0", "pillow==10.4.0", "optree==0.12.1"]
+    }
+  ],
+ "instance_groups": [
+    {
+      "type": "MASTER",
+      "name": "Primary",
+      "instance_type": "m5.xlarge",
+      "count": 1,
+      "ebs": {
+        "volume_type": "gp3",
+        "size_gb": 16,
+        "volumes_per_instance": 1
+      }
+    },
+    {
+      "type": "CORE",
+      "name": "Core",
+      "instance_type": "m5.xlarge",
+      "count": 1,
+      "ebs": {
+        "volume_type": "gp3",
+        "size_gb": 16,
+        "volumes_per_instance": 1
+      }
+    }
+  ],
+  "auto_termination_idle_seconds": 10800,
+  "scale_down_behavior": "TERMINATE_AT_TASK_COMPLETION",
+  "enable_unhealthy_node_replacement": true
+}

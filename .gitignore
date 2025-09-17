@@ -4,6 +4,10 @@ __pycache__/
 *$py.class
 
 .idea
+emr.conf.json
+s3-write-notebooks.json
+trust-policy.json
+create_role.sh
 
 # C extensions
 *.so
