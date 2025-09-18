@@ -150,6 +150,9 @@ BOOTSTRAP_JSON="$(jq -c '
     )
 ' "${CONF_FILE}")"
 
+# Configuration
+CONFIGURATIONS_JSON="$(jq -c '.configurations // []' "${CONF_FILE}")"
+
 # ---- Divers
 UNHEALTHY_REPLACE="$(jq -r '.enable_unhealthy_node_replacement // true' "${CONF_FILE}")"
 SCALE_DOWN="$(jq -r '.scale_down_behavior // "TERMINATE_AT_TASK_COMPLETION"' "${CONF_FILE}")"
@@ -174,6 +177,8 @@ else
 fi
 info "ScaleDown:      ${SCALE_DOWN}"
 info "IdleTerminate:  ${IDLE_SEC}s"
+[[ -n "${CONFIGURATIONS_JSON}" && "${CONFIGURATIONS_JSON}" != "[]" ]] && info "Configurations: ${CONFIGURATIONS_JSON}"
+
 [[ "${UNHEALTHY_REPLACE}" == "true" ]] && info "Unhealthy node replacement: ENABLED" || info "Unhealthy node replacement: DISABLED"
 
 # ---- Commande
@@ -194,6 +199,11 @@ CMD=( aws emr create-cluster
 # -> ajout bootstrap
 if [[ -n "${BOOTSTRAP_JSON}" && "${BOOTSTRAP_JSON}" != "[]" && "${BOOTSTRAP_JSON}" != "null" ]]; then
   CMD+=( --bootstrap-actions "${BOOTSTRAP_JSON}" )
+fi
+
+# Injection dans la commande EMR
+if [[ -n "${CONFIGURATIONS_JSON}" && "${CONFIGURATIONS_JSON}" != "[]" ]]; then
+  CMD+=( --configurations "${CONFIGURATIONS_JSON}" )
 fi
 
 info "-> Lancement du cluster EMR…"
